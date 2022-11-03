@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:trinity_w/helper/design.dart';
+import 'package:trinity_w/model/contacts_model.dart';
 
 class EditContacts extends StatelessWidget {
-  const EditContacts({Key? key}) : super(key: key);
+  const EditContacts({Key? key, required this.contact}) : super(key: key);
+  final ContactsModel contact;
 
   @override
   Widget build(BuildContext context) {
-    return const EditContactsView();
+    return EditContactsView(contact: contact);
   }
 }
 class EditContactsView extends StatefulWidget {
-  const EditContactsView({Key? key}) : super(key: key);
+  const EditContactsView({Key? key, required this.contact}) : super(key: key);
+  final ContactsModel contact;
 
   @override
   State<EditContactsView> createState() => _EditContactsViewState();
@@ -18,10 +21,19 @@ class EditContactsView extends StatefulWidget {
 
 class _EditContactsViewState extends State<EditContactsView> {
 
-  TextEditingController? firstName;
-  TextEditingController? lastName;
-  TextEditingController? email;
-  TextEditingController? phone;
+  TextEditingController firstName = TextEditingController();
+  TextEditingController lastName = TextEditingController();
+  TextEditingController email = TextEditingController();
+  TextEditingController phone = TextEditingController();
+
+  @override
+  void initState() {
+    firstName.text = widget.contact.firstName!;
+    lastName.text = widget.contact.lastName ?? '';
+    email.text = widget.contact.email ?? '';
+    phone.text = widget.contact.phone ?? '';
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,8 +77,11 @@ class _EditContactsViewState extends State<EditContactsView> {
                             borderRadius: BorderRadius.circular(100),
                             color: AppDesign.primaryColor
                         ),
-                        child: const Center(
-                            child: Text('H', style: TextStyle(fontSize: 40, color: Colors.white))
+                        child: Center(
+                            child: Text(
+                              '${widget.contact.firstName?[0]}${widget.contact.lastName?[0]}',
+                              style: const TextStyle(fontSize: 40, color: Colors.white)
+                            )
                         ),
                       ),
                     ),
@@ -90,9 +105,9 @@ class _EditContactsViewState extends State<EditContactsView> {
                       padding: const EdgeInsets.all(8.0),
                       child: Column(
                         children: [
-                          formField(title: 'Email', controller: firstName),
+                          formField(title: 'Email', controller: email),
                           const SizedBox(height: 24),
-                          formField(title: 'Phone', controller: lastName, isNext: false),
+                          formField(title: 'Phone', controller: phone, isNext: false),
                         ],
                       ),
                     ),
