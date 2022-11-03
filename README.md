@@ -1,3 +1,3 @@
 ## Getting Started
 
-Trinity W Application
+Trinity W - Hakim Zulkhibri
