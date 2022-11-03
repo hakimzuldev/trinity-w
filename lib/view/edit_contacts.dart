@@ -75,8 +75,13 @@ class _EditContactsViewState extends State<EditContactsView> {
           body: BlocListener<ContactsBloc, ContactsState>(
             listener: (context, state) {
               if (state is SaveContactSuccess) {
+                Navigator.pop(context);
+                Navigator.pop(context);
+                Modal.notificationModal(context: context, title: 'Success!', content: const Text('Refresh the list.'));
 
               } else if (state is SaveContactError) {
+                Navigator.pop(context);
+                Modal.notificationModal(context: context, title: 'Uh-oh!', content: const Text('An error occurred.'));
 
               } else if (state is SaveContactLoading) {
                 Loading.onScreen(context: context);

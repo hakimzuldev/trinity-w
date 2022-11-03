@@ -79,7 +79,12 @@ class ContactsBloc extends Bloc<ContactsEvent, ContactsState> {
         final bool isSuccess = await contactsRepo.saveContact(contact: event.contact);
         logger('SaveContactSuccess');
         logger(isSuccess);
-        emit(SaveContactSuccess());
+
+        if (!isSuccess) {
+          emit(SaveContactError());
+        } else {
+          emit(SaveContactSuccess());
+        }
       } catch (e) {
         logger('SaveContactsError');
         emit(SaveContactError());
