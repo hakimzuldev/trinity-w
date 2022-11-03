@@ -15,14 +15,15 @@ class ContactsRepo {
 
       try {
         logger('getContactsModel | trying to getApplicationDocumentsDirectory');
-        final path = await getApplicationDocumentsDirectory();
+        final appDir = await getApplicationDocumentsDirectory();
 
         logger('getContactsModel | trying to getFile');
-        final file = File('$path/data.json');
+        final file = await File('${appDir.path}/data.json').create();
 
         logger('getContactsModel | trying to writeAsString');
         file.writeAsString(jsonData);
       } catch (e) {
+        logger('getContactsModel | throw Exception 01 $e');
         throw Exception();
       }
 
@@ -36,8 +37,8 @@ class ContactsRepo {
 
   Future<bool> saveContact({required ContactsModel contact}) async {
     try {
-      final path = await getApplicationDocumentsDirectory();
-      final file = File('$path/data.json');
+      final appDir = await getApplicationDocumentsDirectory();
+      final file = File('${appDir.path}/data.json');
 
       var jsonData = await file.readAsString();
 
@@ -46,20 +47,29 @@ class ContactsRepo {
       contacts.removeWhere((element) => element.id == contact.id);
       contacts.add(contact);
 
-      file.writeAsString(contacts.toString());
+      // String contactsParsed = contacts.map((e) => e.toJson()).toList().toString();
+      await file.writeAsString(json.encode(contacts));
+      // await file.writeAsString(contacts.map((e) => e.toJson()));
 
       return true;
     } catch (e) {
+      logger('saveContactError: $e');
       return false;
     }
   }
 
   Future<List<ContactsModel>> readContacts() async {
-    final path = await getApplicationDocumentsDirectory();
-    final file = File('$path/data.json');
+    try {
+      final appDir = await getApplicationDocumentsDirectory();
+      final file = File('${appDir.path}/data.json');
 
-    var jsonData = await file.readAsString();
+      var jsonData = await file.readAsString();
+      logger('readContacts jsonData: ${jsonData}');
 
-    return ContactsModel.contactListFromJson(json.decode(jsonData));
+      return ContactsModel.contactListFromJson(json.decode(jsonData));
+    } catch (e) {
+      logger('readContactsError: ${e.toString()}');
+      throw Exception();
+    }
   }
 }
