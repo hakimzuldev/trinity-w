@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:trinity_w/controller/contacts_controller.dart';
 import 'package:trinity_w/helper/design.dart';
 import 'package:trinity_w/model/contacts_model.dart';
+import 'package:trinity_w/repo/contacts_repo.dart';
+import 'package:trinity_w/widget/loading.dart';
 import 'package:trinity_w/widget/modal.dart';
 
 class EditContacts extends StatelessWidget {
@@ -9,7 +13,10 @@ class EditContacts extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return EditContactsView(contact: contact);
+    return BlocProvider<ContactsBloc>(
+      create: (context) => ContactsBloc(ContactsRepo()),
+      child: EditContactsView(contact: contact)
+    );
   }
 }
 class EditContactsView extends StatefulWidget {
@@ -22,6 +29,7 @@ class EditContactsView extends StatefulWidget {
 
 class _EditContactsViewState extends State<EditContactsView> {
 
+  late ContactsBloc contactsBloc;
   TextEditingController firstName = TextEditingController();
   TextEditingController lastName = TextEditingController();
   TextEditingController email = TextEditingController();
@@ -29,6 +37,7 @@ class _EditContactsViewState extends State<EditContactsView> {
 
   @override
   void initState() {
+    contactsBloc = BlocProvider.of<ContactsBloc>(context);
     firstName.text = widget.contact.firstName ?? '';
     lastName.text = widget.contact.lastName ?? '';
     email.text = widget.contact.email ?? '';
@@ -63,58 +72,69 @@ class _EditContactsViewState extends State<EditContactsView> {
               )
             ],
           ),
-          body: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Center(
-                      child: Container(
-                        height: 100,
-                        width: 100,
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(100),
-                            color: AppDesign.primaryColor
+          body: BlocListener<ContactsBloc, ContactsState>(
+            listener: (context, state) {
+              if (state is SaveContactSuccess) {
+
+              } else if (state is SaveContactError) {
+
+              } else if (state is SaveContactLoading) {
+                Loading.onScreen(context: context);
+              }
+            },
+            child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: Container(
+                          height: 100,
+                          width: 100,
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(100),
+                              color: AppDesign.primaryColor
+                          ),
+                          child: Center(
+                              child: Text(
+                                '${widget.contact.firstName?[0]}${widget.contact.lastName?[0]}',
+                                style: const TextStyle(fontSize: 40, color: Colors.white)
+                              )
+                          ),
                         ),
-                        child: Center(
-                            child: Text(
-                              '${widget.contact.firstName?[0]}${widget.contact.lastName?[0]}',
-                              style: const TextStyle(fontSize: 40, color: Colors.white)
-                            )
+                      ),
+                      const SizedBox(height: 24),
+                      titleInfo('Main Information'),
+                      const SizedBox(height: 8),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          children: [
+                            formField(title: 'First Name', controller: firstName, isRequired: true),
+                            const SizedBox(height: 24),
+                            formField(title: 'Last Name', controller: lastName, isRequired: true),
+                          ],
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 24),
-                    titleInfo('Main Information'),
-                    const SizedBox(height: 8),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        children: [
-                          formField(title: 'First Name', controller: firstName, isRequired: true),
-                          const SizedBox(height: 24),
-                          formField(title: 'Last Name', controller: lastName, isRequired: true),
-                        ],
+                      const SizedBox(height: 8),
+                      titleInfo('Sub Information'),
+                      const SizedBox(height: 8),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          children: [
+                            formField(title: 'Email', controller: email),
+                            const SizedBox(height: 24),
+                            formField(title: 'Phone', controller: phone, isNext: false),
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    titleInfo('Sub Information'),
-                    const SizedBox(height: 8),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        children: [
-                          formField(title: 'Email', controller: email),
-                          const SizedBox(height: 24),
-                          formField(title: 'Phone', controller: phone, isNext: false),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              )
+                    ],
+                  ),
+                )
+            ),
           )
       ),
     );
@@ -172,7 +192,14 @@ class _EditContactsViewState extends State<EditContactsView> {
     } else if (lastName.text.isEmpty) {
       Modal.notificationModal(context: context, title: 'Uh-oh!', content: const Text('Last name cannot be empty!'));
     } else {
-      Modal.notificationModal(context: context, title: 'Yay', content: const Text('Yay!'));
+      ContactsModel contact = ContactsModel(
+        widget.contact.id,
+        firstName.text,
+        lastName.text,
+        email.text,
+        phone.text
+      );
+      contactsBloc.add(SaveContact(contact: contact));
     }
   }
 }

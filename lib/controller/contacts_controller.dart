@@ -11,6 +11,15 @@ class ContactsEvent extends Equatable {
 
 class GetContacts extends ContactsEvent {}
 
+class SaveContact extends ContactsEvent {
+  final ContactsModel contact;
+
+  SaveContact({required this.contact});
+}
+
+class RefreshContacts extends ContactsEvent {}
+
+
 class ContactsState extends Equatable {
   @override
   List<Object?> get props => [];
@@ -26,6 +35,20 @@ class GetContactsSuccess extends ContactsState {
 
 class GetContactsError extends ContactsState {}
 class GetContactsLoading extends ContactsState {}
+
+class SaveContactSuccess extends ContactsState {}
+
+class SaveContactError extends ContactsState {}
+class SaveContactLoading extends ContactsState {}
+
+class RefreshContactsSuccess extends ContactsState {
+  final List<ContactsModel> contacts;
+
+  RefreshContactsSuccess({required this.contacts});
+}
+
+class RefreshContactsError extends ContactsState {}
+class RefreshContactsLoading extends ContactsState {}
 
 class ContactsBloc extends Bloc<ContactsEvent, ContactsState> {
   // ContactsBloc(super.initialState);
@@ -46,7 +69,36 @@ class ContactsBloc extends Bloc<ContactsEvent, ContactsState> {
         logger('GetContactsError');
         emit(GetContactsError());
       }
+    });
 
+    on<SaveContact>((event, emit) async {
+      logger('SaveContact');
+      emit(SaveContactLoading());
+
+      try {
+        final bool isSuccess = await contactsRepo.saveContact(contact: event.contact);
+        logger('SaveContactSuccess');
+        logger(isSuccess);
+        emit(SaveContactSuccess());
+      } catch (e) {
+        logger('SaveContactsError');
+        emit(SaveContactError());
+      }
+    });
+
+    on<RefreshContacts>((event, emit) async {
+      logger('RefreshContacts');
+      emit(RefreshContactsLoading());
+
+      try {
+        final List<ContactsModel> contacts = await contactsRepo.readContacts();
+        logger('RefreshContactsSuccess');
+        logger(contacts);
+        emit(RefreshContactsSuccess(contacts: contacts));
+      } catch (e) {
+        logger('RefreshContactsError');
+        emit(RefreshContactsError());
+      }
     });
   }
 }
