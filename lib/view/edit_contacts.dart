@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:trinity_w/helper/design.dart';
 import 'package:trinity_w/model/contacts_model.dart';
+import 'package:trinity_w/widget/modal.dart';
 
 class EditContacts extends StatelessWidget {
   const EditContacts({Key? key, required this.contact}) : super(key: key);
@@ -28,7 +29,7 @@ class _EditContactsViewState extends State<EditContactsView> {
 
   @override
   void initState() {
-    firstName.text = widget.contact.firstName!;
+    firstName.text = widget.contact.firstName ?? '';
     lastName.text = widget.contact.lastName ?? '';
     email.text = widget.contact.email ?? '';
     phone.text = widget.contact.phone ?? '';
@@ -50,13 +51,13 @@ class _EditContactsViewState extends State<EditContactsView> {
               Padding(
                 padding: const EdgeInsets.all(8),
                 child: GestureDetector(
-                    onTap: () {},
+                    onTap: () => checkSubmission(),
                     onLongPress: () {},
                     child: const Center(
-                        child: Text(
-                            'Save',
-                            style: TextStyle(fontSize: 16, color: Colors.white)
-                        )
+                      child: Text(
+                        'Save',
+                        style: TextStyle(fontSize: 16, color: Colors.white)
+                      )
                     )
                 ),
               )
@@ -165,5 +166,14 @@ class _EditContactsViewState extends State<EditContactsView> {
     );
   }
 
+  void checkSubmission() {
+    if (firstName.text.isEmpty) {
+      Modal.notificationModal(context: context, title: 'Uh-oh!', content: const Text('First name cannot be empty!'));
+    } else if (lastName.text.isEmpty) {
+      Modal.notificationModal(context: context, title: 'Uh-oh!', content: const Text('Last name cannot be empty!'));
+    } else {
+      Modal.notificationModal(context: context, title: 'Yay', content: const Text('Yay!'));
+    }
+  }
 }
 
